@@ -77,23 +77,17 @@
     </b-dropdown-item>
   </b-dropdown>
   <b-button @click="traceroute" variant="success">
-    traceroute
+    traceroute at all snapshots
   </b-button>
   <pre>
     {{ this.condition }}
   </pre>
   <pre>
-    ORIGINAL:
-    <b-form-textarea
-      :value=original_result>
-    </b-form-textarea>
+    TRACEROUTE SIMULATION:
   </pre>
-  <pre>
-    FAILURE SIMULATION:
-    <b-form-textarea
-      :value=failure_sim_result>
-    </b-form-textarea>
-  </pre>
+  <b-table striped hover
+    :items="this.$store.getters['traceroute/getResults']">
+  </b-table>
 </div>
 </template>
 
@@ -110,22 +104,25 @@ export default {
         network: this.network,
         snapshot: this.snapshot,
       })
+      this.$store.dispatch("interfaces/changeSnapshot", {
+        network: this.network,
+        snapshot: this.snapshot,
+      })
     },
     traceroute(){
       this.$store.commit("traceroute/clear")
       const src_str = this.node_intf_str(this.src_node, this.src_intf, this.src_address)
       const dst_str = this.node_intf_str(this.dst_node, this.dst_intf, this.dst_address)
       this.condition = `${src_str} -> ${dst_str}`
-      this.$store.dispatch("traceroute/traceroute_original", {
-        node: this.src_node,
-        intf: this.src_intf,
-        dst: this.dst_address,
-      })
-      this.$store.dispatch("traceroute/traceroute_failure", {
-        node: this.src_node,
-        intf: this.src_intf,
-        dst: this.dst_address,
-      })
+      for(const snapshot of this.$store.getters['snapshots/getSnapshots'](this.network)){
+        this.$store.dispatch("traceroute/traceroute", {
+          network: this.network,
+          snapshot: snapshot,
+          node: this.src_node,
+          intf: this.src_intf,
+          dst: this.dst_address,
+        })
+      }
     }
   },
   data() {
@@ -142,12 +139,6 @@ export default {
     }
   },
   computed: {
-    original_result() {
-      return this.$store.getters['traceroute/getOriginal']
-    },
-    failure_sim_result() {
-      return this.$store.getters['traceroute/getFailure']
-    },
   },
   async fetch ({ app, store, params }) {
     const snapshots = await app.$axios.$get('/api/snapshots')
