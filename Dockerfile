@@ -1,4 +1,4 @@
-FROM node:16
+FROM node:16.13-bullseye-slim
 WORKDIR /fish-tracer
 COPY . /fish-tracer/
 RUN yarn install
