@@ -1,12 +1,38 @@
 <template>
 <div>
+  network
+  <b-dropdown
+    :text=network
+    variant="outline-secondary"
+    >
+    <b-dropdown-item
+      v-for="network_name in this.$store.getters['snapshots/getNetworks']"
+      :key="network_name"
+      @click="network = network_name"
+      >
+      {{ network_name }}
+    </b-dropdown-item>
+  </b-dropdown>
+  snapshot
+  <b-dropdown
+    :text=snapshot
+    variant="outline-secondary"
+    >
+    <b-dropdown-item
+      v-for="snapshot_name in this.$store.getters['snapshots/getSnapshots'](network = network)"
+      :key="snapshot_name"
+      @click="set_snapshot(snapshot_name)"
+      >
+      {{ snapshot_name }}
+    </b-dropdown-item>
+  </b-dropdown>
   src
   <b-dropdown
     :text=src_node
     variant="outline-secondary"
     >
     <b-dropdown-item
-      v-for="node_name in this.$store.getters['nodes/getNodes']"
+      v-for="node_name in this.$store.getters['nodes/getNetworkSnapshotNodes'](network=network, snapshot=snapshot)"
       :key="node_name"
       @click="src_node = node_name"
       >
@@ -18,7 +44,7 @@
     variant="outline-secondary"
     >
     <b-dropdown-item
-      v-for="intf in this.$store.getters['interfaces/getNodeInterfaces'](node=src_node, onlyL3=true)"
+      v-for="intf in this.$store.getters['interfaces/getNodeInterfaces'](network=network, snapshot=snapshot, node=src_node, onlyL3=true)"
       :key="intf['interface']"
       @click="src_intf = intf['interface']; src_address = intf['addresses'][0]"
       >
@@ -31,7 +57,7 @@
     variant="outline-secondary"
     >
     <b-dropdown-item
-      v-for="node_name in this.$store.getters['nodes/getNodes']"
+      v-for="node_name in this.$store.getters['nodes/getNetworkSnapshotNodes'](network=network, snapshot=snapshot)"
       :key="node_name"
       @click="dst_node = node_name"
       >
@@ -43,7 +69,7 @@
     variant="outline-secondary"
     >
     <b-dropdown-item
-      v-for="intf in this.$store.getters['interfaces/getNodeInterfaces'](node=dst_node, onlyL3=true)"
+      v-for="intf in this.$store.getters['interfaces/getNodeInterfaces'](network=network, snapshot=snapshot, node=dst_node, onlyL3=true)"
       :key="intf['interface']"
       @click="dst_intf = intf['interface']; dst_address = intf['addresses'][0]"
       >
@@ -78,6 +104,13 @@ export default {
     node_intf_str(node, intf, addr) {
       return `${node}[${intf}] ${addr}`
     },
+    set_snapshot(snapshot){
+      this.snapshot = snapshot
+      this.$store.dispatch("nodes/changeSnapshot", {
+        network: this.network,
+        snapshot: this.snapshot,
+      })
+    },
     traceroute(){
       this.$store.commit("traceroute/clear")
       const src_str = this.node_intf_str(this.src_node, this.src_intf, this.src_address)
@@ -97,6 +130,8 @@ export default {
   },
   data() {
     return {
+      network: "pushed_configs",
+      snapshot: "mddo_network",
       src_node: "source node",
       src_intf: "source interface",
       src_address: "source address",
@@ -115,10 +150,12 @@ export default {
     },
   },
   async fetch ({ app, store, params }) {
-    const nodes = await app.$axios.$get('/api/nodes')
-    store.commit("nodes/setNodes", nodes.result)
-    const interfaces = await app.$axios.$get('/api/interfaces')
-    store.commit("interfaces/setInterfaces", interfaces.result)
+    const snapshots = await app.$axios.$get('/api/snapshots')
+    store.commit("snapshots/setSnapshots", snapshots)
+    const nodes = await app.$axios.$get("/api/networks/pushed_configs/snapshots/mddo_network/nodes")
+    store.commit("nodes/setNodes", {network: "pushed_configs", snapshot: "mddo_network", nodes: nodes})
+    const interfaces = await app.$axios.$get("/api/networks/pushed_configs/snapshots/mddo_network/interfaces")
+    store.commit("interfaces/setInterfaces", {network: "pushed_configs", snapshot: "mddo_network", interfaces: interfaces})
   },
 }
 </script>
