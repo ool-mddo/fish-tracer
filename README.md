@@ -2,12 +2,12 @@
 
 exec traceroute and other questions on batfish via web interface
 
-* batfish-wrapper
+* [batfish-wrapper](https://github.com/ool-mddo/batfish-wrapper)
   * impl. HTTP API
 * fish-tracer
   * impl. frontend app
 
-# setting
+## setting
 
 * define host address or FQDN in docker-compose.override.yml
 
@@ -86,3 +86,16 @@ More information about the usage of this directory in [the documentation](https:
 This directory contains your Vuex store files. Creating a file in this directory automatically activates Vuex.
 
 More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/store).
+
+## develop
+
+Lint (eslint)
+
+```sh
+yarn run lint
+```
+
+Code format (prettier)
+```sh
+yarn run format
+```
