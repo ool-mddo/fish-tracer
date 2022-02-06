@@ -31,6 +31,8 @@ export const getters = {
       }
       if(item.result["Traces"].filter(x => x.disposition=="ACCEPTED").length > 0){
         return {network: item.network, snapshot: item.snapshot, description: item.description, result: "reachable"}
+      } else if (item.result["Traces"].filter(x => x.disposition=="DISABLED").length > 0) {
+        return {network: item.network, snapshot: item.snapshot, description: item.description, result: "DISABLED"}
       } else {
         return {network: item.network, snapshot:item.snapshot, description: item.description, result: "U N R E A C H A B L E"}
       }
