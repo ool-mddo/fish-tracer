@@ -34,34 +34,40 @@ const trace2hops_str = (trace) => {
     .join(" -> ")
 }
 
-const item2table = (item, result_string) => {
+const item2table = (item, result_string, hops) => {
   return {
     network: item.network,
     snapshot: item.snapshot,
     description: item.description,
     result: result_string,
-    hops: item?.result?.Traces?.length > 0 ? trace2hops_str(item.result.Traces[0]) : "None",
+    hops: hops,
   }
 }
 
+const find_trace_by_disposition = (item, disposition) => {
+  return item.result.Traces.find((trace) => trace.disposition == disposition)
+}
+
 const is_trace_result = (item, disposition) => {
-  return !!item.result.Traces.find((trace) => trace.disposition == disposition)
+  return !!find_trace_by_disposition(item, disposition)
 }
 
 export const getters = {
   getResults: (state) => {
     return state.results.map((item) => {
       if (!Object.keys(item.result).length) {
-        return item2table(item, "processing")
+        return item2table(item, "processing", "")
       }
-
       if (is_trace_result(item, "ACCEPTED")) {
-        return item2table(item, "Reachable")
-      } else if (is_trace_result(item, "DISABLED")) {
-        return item2table(item, "DISABLED")
-      } else {
-        return item2table(item, "U N R E A C H A B L E")
+        const hops_str = trace2hops_str(find_trace_by_disposition(item, "ACCEPTED"))
+        return item2table(item, "Reachable", hops_str)
       }
+      if (is_trace_result(item, "DISABLED")) {
+        const hops_str = trace2hops_str(find_trace_by_disposition(item, "DISABLED"))
+        return item2table(item, "DISABLED", hops_str)
+      }
+      const hops_str = item.result?.Traces?.length > 0 ? trace2hops_str(item.result.Traces[0]) : ""
+      return item2table(item, "U N R E A C H A B L E", hops_str)
     })
   },
 }
