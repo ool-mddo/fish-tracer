@@ -1,84 +1,118 @@
 <template>
   <div>
-    network
-    <b-dropdown :text="network" variant="outline-secondary">
-      <b-dropdown-item
-        v-for="network_name in this.$store.getters['snapshots/getNetworks']"
-        :key="network_name"
-        @click="network = network_name"
-      >
-        {{ network_name }}
-      </b-dropdown-item>
-    </b-dropdown>
-    snapshot
-    <b-dropdown :text="snapshot" variant="outline-secondary">
-      <b-dropdown-item
-        v-for="snapshot_name in this.$store.getters['snapshots/getSnapshots']((network = network))"
-        :key="snapshot_name"
-        @click="set_snapshot(snapshot_name)"
-      >
-        {{ snapshot_name }}
-      </b-dropdown-item>
-    </b-dropdown>
-    src
-    <b-dropdown :text="src_node" variant="outline-secondary">
-      <b-dropdown-item
-        v-for="node_name in this.$store.getters['nodes/getNodes']"
-        :key="node_name"
-        @click="src_node = node_name"
-      >
-        {{ node_name }}
-      </b-dropdown-item>
-    </b-dropdown>
-    <b-dropdown :text="src_intf" variant="outline-secondary">
-      <b-dropdown-item
-        v-for="intf in this.$store.getters['interfaces/getNodeInterfaces'](
-          (node = src_node),
-          (onlyL3 = true)
-        )"
-        :key="intf['interface']"
-        @click="
-          src_intf = intf['interface']
-          src_address = intf['addresses'][0]
-        "
-      >
-        {{ `${intf["interface"]} (${intf["addresses"][0]})` }}
-      </b-dropdown-item>
-    </b-dropdown>
-    dst
-    <b-dropdown :text="dst_node" variant="outline-secondary">
-      <b-dropdown-item
-        v-for="node_name in this.$store.getters['nodes/getNodes']"
-        :key="node_name"
-        @click="dst_node = node_name"
-      >
-        {{ node_name }}
-      </b-dropdown-item>
-    </b-dropdown>
-    <b-dropdown :text="dst_intf" variant="outline-secondary">
-      <b-dropdown-item
-        v-for="intf in this.$store.getters['interfaces/getNodeInterfaces'](
-          (node = dst_node),
-          (onlyL3 = true)
-        )"
-        :key="intf['interface']"
-        @click="
-          dst_intf = intf['interface']
-          dst_address = intf['addresses'][0]
-        "
-      >
-        {{ `${intf["interface"]} (${intf["addresses"][0]})` }}
-      </b-dropdown-item>
-    </b-dropdown>
-    <b-button @click="traceroute" variant="success"> traceroute at all snapshots </b-button>
+    <div class="container">
+      <div class="row">
+        <div class="col">
+          network
+          <b-list-group style="max-height: 10em; overflow: scroll;">
+            <b-list-group-item
+              v-for="item in this.$store.getters['snapshots/getNetworks']"
+              :key="item"
+              :variant="item == network ? 'success' : 'light'"
+              button
+              @click="network = item"
+            >
+              {{ item }}
+            </b-list-group-item>
+          </b-list-group>
+        </div>
+        <div class="col">
+          snapshot
+          <b-list-group style="max-height: 10em; overflow: scroll;">
+            <b-list-group-item
+              v-for="item in this.$store.getters['snapshots/getSnapshots']((network = network))"
+              :key="item"
+              :variant="item == snapshot ? 'success' : 'light'"
+              button
+              @click="set_snapshot(item)"
+            >
+              {{ item }}
+            </b-list-group-item>
+          </b-list-group>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          source node
+          <b-list-group style="max-height: 15em; overflow: scroll;">
+            <b-list-group-item
+              v-for="item in this.$store.getters['nodes/getNodes']"
+              :key="item"
+              :variant="item == src_node ? 'success' : 'light'"
+              button
+              @click="src_node = item"
+            >
+              {{ item }}
+            </b-list-group-item>
+          </b-list-group>
+        </div>
+        <div class="col">
+          source interface
+          <b-list-group style="max-height: 15em; overflow: scroll;">
+            <b-list-group-item
+              v-for="item in this.$store.getters['interfaces/getNodeInterfaces'](
+                (node = src_node),
+                (onlyL3 = true)
+              )"
+              :key="item['interface']"
+              :variant="item['interface'] == src_intf && item['addresses'][0] == src_address? 'success' : 'light'"
+              button
+              @click="
+                src_intf = item['interface']
+                src_address = item['addresses'][0]
+              "
+            >
+            {{ `${item["interface"]} (${item["addresses"][0]})` }}
+            </b-list-group-item>
+          </b-list-group>
+        </div>
+        <div class="col">
+          destination node
+          <b-list-group style="max-height: 15em; overflow: scroll;">
+            <b-list-group-item
+              v-for="item in this.$store.getters['nodes/getNodes']"
+              :key="item"
+              :variant="item == dst_node ? 'success' : 'light'"
+              button
+              @click="dst_node = item"
+            >
+              {{ item }}
+            </b-list-group-item>
+          </b-list-group>
+        </div>
+        <div class="col">
+          destination interface
+          <b-list-group style="max-height: 15em; overflow: scroll;">
+            <b-list-group-item
+              v-for="item in this.$store.getters['interfaces/getNodeInterfaces'](
+                (node = dst_node),
+                (onlyL3 = true)
+              )"
+              :key="item['interface']"
+              :variant="item['interface'] == dst_intf && item['addresses'][0] == dst_address ? 'success' : 'light'"
+              button
+              @click="
+                dst_intf = item['interface']
+                dst_address = item['addresses'][0]
+              "
+            >
+            {{ `${item["interface"]} (${item["addresses"][0]})` }}
+            </b-list-group-item>
+          </b-list-group>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <b-button @click="traceroute" variant="success"> traceroute at all snapshots </b-button>
+        </div>
+      </div>
+    </div>
     <pre>
-    {{ this.condition }}
-  </pre
-    >
+      {{ this.condition }}
+    </pre>
     <pre>
-    TRACEROUTE SIMULATION:
-  </pre
-    >
+      TRACEROUTE SIMULATION:
+    </pre>
     <b-table striped hover :items="this.$store.getters['traceroute/getResults']"> </b-table>
   </div>
 </template>
