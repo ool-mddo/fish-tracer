@@ -1,18 +1,19 @@
 export const state = () => ({
-  interfaces: {},
-  network: "",
-  snapshot: "",
+  interfaces: [],
+  interfaces_cache: {},
 })
 
 export const mutations = {
   setInterfaces(state, { network, snapshot, interfaces }) {
     if (!(network in state.interfaces)) {
-      state.interfaces[network] = {}
+      state.interfaces_cache[network] = {}
     }
-    state.interfaces[network][snapshot] = interfaces
+    state.interfaces_cache[network][snapshot] = interfaces
+    state.interfaces = interfaces
   },
-  setNetwork: (state, network) => (state.network = network),
-  setSnapshot: (state, snapshot) => (state.snapshot = snapshot),
+  setInterfacesFromCache(state, { network, snapshot }) {
+    state.interfaces = state.interfaces_cache[network][snapshot]
+  },
 }
 
 export const actions = {
@@ -20,22 +21,16 @@ export const actions = {
     if (!(network in state.interfaces && snapshot in state.interfaces[network])) {
       const interfaces = await this.$axios.$get(`/api/networks/${network}/snapshots/${snapshot}/interfaces`)
       commit("setInterfaces", { network, snapshot, interfaces })
+    } else {
+      commit("setInterfacesFromCache", { network, snapshot })
     }
-    commit("setNetwork", network)
-    commit("setSnapshot", snapshot)
   },
 }
 
 export const getters = {
-  getNodeInterfaces:
-    (state) =>
-    (network, snapshot, node, onlyL3 = true) => {
-      if (!(network in state.interfaces) || !(snapshot in state.interfaces[network])) {
-        return []
-      } else {
-        return state.interfaces[network][snapshot].filter(
-          (intf) => intf.addresses.length > 0 == onlyL3 && intf.node == node
-        )
-      }
-    },
+  getNodeInterfaces: (state) => (node, onlyL3 = true) => {
+    return state.interfaces.filter(
+      (intf) => intf.addresses.length > 0 == onlyL3 && intf.node == node
+    )
+  },
 }

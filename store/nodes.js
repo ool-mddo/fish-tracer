@@ -1,44 +1,39 @@
 export const state = () => ({
-  nodes: {},
-  network: "",
-  snapshot: "",
+  nodes: [],
+  nodes_cache: {},
 })
 
 export const mutations = {
   setNodes(state, { network, snapshot, nodes }) {
-    if (!(network in state.nodes)) {
-      state.nodes[network] = {}
+    if (!(network in state.nodes_cache)) {
+      state.nodes_cache[network] = {}
     }
-    state.nodes[network][snapshot] = nodes.sort((a, b) => a.localeCompare(b))
+    state.nodes_cache[network][snapshot] = nodes.sort((a, b) => a.localeCompare(b))
+    state.nodes = state.nodes_cache[network][snapshot]
   },
-  setNetwork: (state, network) => (state.network = network),
-  setSnapshot: (state, snapshot) => (state.snapshot = snapshot),
+  setNodesFromCache(state, { network, snapshot }) {
+    state.nodes = state.nodes_cache[network][snapshot]
+  },
 }
 
 export const actions = {
   async changeSnapshot({ commit, state }, { network, snapshot }) {
-    if (!(network in state.nodes && snapshot in state.nodes[network])) {
+    if (!(network in state.nodes_cache && snapshot in state.nodes_cache[network])) {
       const nodes = await this.$axios.$get(`/api/networks/${network}/snapshots/${snapshot}/nodes`)
       commit("setNodes", { network, snapshot, nodes })
+    } else {
+      commit("setNodesFromCache", { network, snapshot })
     }
-    commit("setNetwork", network)
-    commit("setSnapshot", snapshot)
   },
 }
 
 export const getters = {
-  getNodes: (state) => {
-    if (state.network == "") {
-      return []
-    } else {
-      return state.nodes[state.network][state.snapshot]
-    }
-  },
+  getNodes: (state) => state.nodes,
   getNetworkSnapshotNodes: (state) => (network, snapshot) => {
-    if (!(network in state.nodes) || !(snapshot in state.nodes[network])) {
+    if (!(network in state.nodes_cache) || !(snapshot in state.nodes_cache[network])) {
       return []
     } else {
-      return state.nodes[network][snapshot]
+      return state.nodes_cache[network][snapshot]
     }
   },
 }

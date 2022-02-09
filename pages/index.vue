@@ -23,10 +23,7 @@
     src
     <b-dropdown :text="src_node" variant="outline-secondary">
       <b-dropdown-item
-        v-for="node_name in this.$store.getters['nodes/getNetworkSnapshotNodes'](
-          (network = network),
-          (snapshot = snapshot)
-        )"
+        v-for="node_name in this.$store.getters['nodes/getNodes']"
         :key="node_name"
         @click="src_node = node_name"
       >
@@ -36,8 +33,6 @@
     <b-dropdown :text="src_intf" variant="outline-secondary">
       <b-dropdown-item
         v-for="intf in this.$store.getters['interfaces/getNodeInterfaces'](
-          (network = network),
-          (snapshot = snapshot),
           (node = src_node),
           (onlyL3 = true)
         )"
@@ -53,10 +48,7 @@
     dst
     <b-dropdown :text="dst_node" variant="outline-secondary">
       <b-dropdown-item
-        v-for="node_name in this.$store.getters['nodes/getNetworkSnapshotNodes'](
-          (network = network),
-          (snapshot = snapshot)
-        )"
+        v-for="node_name in this.$store.getters['nodes/getNodes']"
         :key="node_name"
         @click="dst_node = node_name"
       >
@@ -66,8 +58,6 @@
     <b-dropdown :text="dst_intf" variant="outline-secondary">
       <b-dropdown-item
         v-for="intf in this.$store.getters['interfaces/getNodeInterfaces'](
-          (network = network),
-          (snapshot = snapshot),
           (node = dst_node),
           (onlyL3 = true)
         )"
@@ -129,8 +119,8 @@ export default {
   },
   data() {
     return {
-      network: "pushed_configs",
-      snapshot: "mddo_network",
+      network: "network_name",
+      snapshot: "snapshot_name",
       src_node: "source node",
       src_intf: "source interface",
       src_address: "source address",
@@ -142,16 +132,8 @@ export default {
   },
   computed: {},
   async fetch({ app, store }) {
-    const snapshots = await app.$axios.$get("/api/snapshots")
-    store.commit("snapshots/setSnapshots", snapshots)
-    const nodes = await app.$axios.$get("/api/networks/pushed_configs/snapshots/mddo_network/nodes")
-    store.commit("nodes/setNodes", { network: "pushed_configs", snapshot: "mddo_network", nodes: nodes })
-    const interfaces = await app.$axios.$get("/api/networks/pushed_configs/snapshots/mddo_network/interfaces")
-    store.commit("interfaces/setInterfaces", {
-      network: "pushed_configs",
-      snapshot: "mddo_network",
-      interfaces: interfaces,
-    })
+    const all_snapshots = await app.$axios.$get("/api/snapshots")
+    store.commit("snapshots/setSnapshots", all_snapshots)
   },
 }
 </script>
