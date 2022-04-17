@@ -19,7 +19,10 @@ export const actions = {
       .map((key) => `${key}=${params[key]}`)
       .join("&")
     const trace_answer = await this.$axios.$get(`${api}?${param_str}`)
-    const description = trace_answer.snapshot_info.description
+    let description = 'Origin snapshot'
+    if (trace_answer.snapshot_pattern) {
+      description = trace_answer.snapshot_pattern.description
+    }
     const result = trace_answer.result[0]
     commit("addResult", { network, snapshot, description, result })
   },
