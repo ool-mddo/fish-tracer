@@ -166,7 +166,7 @@ export default {
   },
   computed: {},
   async fetch({ app, store }) {
-    const all_snapshots = await app.$axios.$get("/api/snapshots")
+    const all_snapshots = await app.$axios.$get("/batfish/snapshots")
     store.commit("snapshots/setSnapshots", all_snapshots)
   },
 }

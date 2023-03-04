@@ -13,7 +13,7 @@ export const mutations = {
 
 export const actions = {
   async traceroute({ commit }, { network, snapshot, node, intf, dst }) {
-    const api = `/api/networks/${network}/snapshots/${snapshot}/nodes/${node}/traceroute`
+    const api = `/batfish/${network}/${snapshot}/nodes/${node}/traceroute`
     const params = { interface: intf, destination: dst }
     const param_str = Object.keys(params)
       .map((key) => `${key}=${params[key]}`)
