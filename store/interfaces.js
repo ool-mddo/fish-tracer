@@ -19,7 +19,7 @@ export const mutations = {
 export const actions = {
   async changeSnapshot({ commit, state }, { network, snapshot }) {
     if (!(network in state.interfaces && snapshot in state.interfaces[network])) {
-      const interfaces = await this.$axios.$get(`/api/networks/${network}/snapshots/${snapshot}/interfaces`)
+      const interfaces = await this.$axios.$get(`/batfish/${network}/${snapshot}/interfaces`)
       commit("setInterfaces", { network, snapshot, interfaces })
     } else {
       commit("setInterfacesFromCache", { network, snapshot })

@@ -19,7 +19,7 @@ export const mutations = {
 export const actions = {
   async changeSnapshot({ commit, state }, { network, snapshot }) {
     if (!(network in state.nodes_cache && snapshot in state.nodes_cache[network])) {
-      const nodes = await this.$axios.$get(`/api/networks/${network}/snapshots/${snapshot}/nodes`)
+      const nodes = await this.$axios.$get(`/batfish/${network}/${snapshot}/nodes`)
       commit("setNodes", { network, snapshot, nodes })
     } else {
       commit("setNodesFromCache", { network, snapshot })
